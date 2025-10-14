@@ -1,0 +1,2 @@
+# only orjson is needed so far:
+orjson
