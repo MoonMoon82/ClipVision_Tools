@@ -5,6 +5,7 @@ from .clipvision_embeds import CompareEmbeds
 
 from .image_search import ImageSearcher
 from .image_search import ResultBrowser
+from .image_search import ResultBrowserAdvanced
 from .image_search import ResultCombiner
 
 from .clipvision_db import LoadDB
@@ -22,6 +23,7 @@ NODE_CLASS_MAPPINGS = {
     "CompareEmbeds": CompareEmbeds,
     "ImageSearcher": ImageSearcher,
     "RBrowser": ResultBrowser,
+    "AdvRBrowser": ResultBrowserAdvanced,
     "RCombiner": ResultCombiner,
     "LoadDB": LoadDB,
     "GenerateDB": GenerateDB,
@@ -35,6 +37,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CompareEmbeds": "Compare Embeddings",
     "ImageSearcher": "Image Searcher",
     "RBrowser": "Result Browser",
+    "AdvRBrowser": "Advanced Result Browser",
     "RCombiner": "Combine Results",
     "DBLoader": "Embeddings DB Loader",
     "GenerateDB": "Generate Image Database"

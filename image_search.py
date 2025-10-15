@@ -2,7 +2,7 @@ from typing import Any
 import numpy as np
 from .clipvision_db import LoadDB
 from .utils import (get_image, repairImage)
-
+from nodes import (ImageBatch)
 class results_class:
     distances: Any = None
     clip_features: Any = None
@@ -31,7 +31,6 @@ class ImageSearcher:
     RETURN_NAMES = ("RESULTS",)
     FUNCTION = "get_similar_images"
     CATEGORY = "ClipVisionTools"
-    
 
     def get_similar_images(self, img_db: LoadDB, img_emb):
         distances = []
@@ -71,7 +70,6 @@ class ResultCombiner:
     RETURN_NAMES = ("RESULTS",)
     FUNCTION = "combine_results"
     CATEGORY = "ClipVisionTools"
-    
 
     def combine_results(self, results1, results2):
         distances1 = results1.distances
@@ -81,9 +79,6 @@ class ResultCombiner:
         return result,
 
 class ResultBrowser:
-    #last_match = ""
-    #distances_sorted = []
-    #distances_sorted2 = []
     def __init__(self):
         pass
 
@@ -118,3 +113,69 @@ class ResultBrowser:
         file_name, _ = clip_features[idx]
         t_image = repairImage(get_image(file_name))
         return t_image, file_name, score
+
+class ResultBrowserAdvanced:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": { 
+                "results": ("SRESULTS",),
+                "offset_index": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff }),
+                "image_count": ("INT", {"default": 1, "min": 1, "max": 0xffffffffffffffff }),
+                "match": (["first", "last"], {"default": "first"})
+            },
+            "optional": { 
+                "batch_frame_image": ("IMAGE",),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE", "STRING", "FLOAT")
+    RETURN_NAMES = ("IMAGE", "FILENAME", "SCORE")
+    FUNCTION = "AdvResult_Browser"
+    CATEGORY = "ClipVisionTools"
+
+    def AdvResult_Browser(self, results, offset_index, image_count, match, batch_frame_image=None ):
+        scores = []
+        filenames = []
+        distances1 = results.distances
+        clip_features = results.clip_features
+
+        remove_first_image = batch_frame_image is not None
+
+        if match == "first":
+            indices = np.argsort(distances1)[::-1]
+            distances_sorted = [(i, distances1[i]) for i in indices]
+
+        if match == "last":
+            indices = np.argsort(distances1)[::1]
+            distances_sorted = [(i, distances1[i]) for i in indices]
+
+        start_idx = offset_index
+        end_idx = start_idx + image_count
+        
+        for i in range(start_idx, end_idx):
+            idx, score = distances_sorted[i]
+            file_name, _ = clip_features[idx]
+            t_image = repairImage(get_image(file_name))
+            if batch_frame_image is None:
+                #print("init_frame image")
+                batch_frame_image = t_image
+            else:
+                #print("batching image")
+                batch_frame_image = ImageBatch().batch(batch_frame_image, t_image )[0]
+            scores.append(scores)
+            filenames.append(file_name)
+            #print("ENDING")
+        #print("datatype= ", type(batch_frame_image))
+            
+        if remove_first_image:
+            batch_frame_image = batch_frame_image[1:]
+            #batch_frame_image.pop(0)
+           # batch_frame_image
+
+        return batch_frame_image, filenames, scores
+#ImageBatch
+
