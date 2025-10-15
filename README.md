@@ -19,6 +19,7 @@ This repository provides several custom nodes for ComfyUI that enable efficient 
 - path_to_images: Specify the full path to your image directory. All subfolders are scanned automatically.
 - new_db_name: Choose a filename with the .json extension. The file will automatically be stored in your ComfyUI "/models/embDBs" folder.
 - If you have Crystools installed, you can use the "Show any value to console/display" node to display a list of files that could not be recorded in the database (any other node capable of displaying text output works as well).
+
 Additionally you can chain up as many databases has you want by using the optional "img_db" socket.
 
 ## After creating a database, you can search for similar images using a workflow like the one shown above:

@@ -1,0 +1,2 @@
+# Ignore local cache/temp files
+__pycache__/

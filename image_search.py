@@ -161,21 +161,16 @@ class ResultBrowserAdvanced:
             file_name, _ = clip_features[idx]
             t_image = repairImage(get_image(file_name))
             if batch_frame_image is None:
-                #print("init_frame image")
                 batch_frame_image = t_image
             else:
-                #print("batching image")
                 batch_frame_image = ImageBatch().batch(batch_frame_image, t_image )[0]
-            scores.append(scores)
+            scores.append(score)
             filenames.append(file_name)
-            #print("ENDING")
-        #print("datatype= ", type(batch_frame_image))
+
             
         if remove_first_image:
             batch_frame_image = batch_frame_image[1:]
-            #batch_frame_image.pop(0)
-           # batch_frame_image
+
 
         return batch_frame_image, filenames, scores
-#ImageBatch
 
