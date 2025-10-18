@@ -20,15 +20,19 @@ This repository provides several custom nodes for ComfyUI that enable efficient 
 - new_db_name: Choose a filename with the .json extension. The file will automatically be stored in your ComfyUI "/models/embDBs" folder.
 - If you have Crystools installed, you can use the "Show any value to console/display" node to display a list of files that could not be recorded in the database (any other node capable of displaying text output works as well).
 
-Additionally you can chain up as many databases has you want by using the optional "img_db" socket.
-
 ## After creating a database, you can search for similar images using a workflow like the one shown above:
 ![Using a ClipVision-Database](examples/UsingClipVision-Database.png)
 - Load an image into the Get Image Embeddings node, connected to a "Load CLIP Vision" node and select a Clip Vision model. → This node generates the embedding data of your input image.
 - Pass this embedding data to the "Image Searcher" node, which calculates image similarities using a cosine similarity algorithm.
-- Browse the search results with the "Result Browser" node:
+- "Result Browser": Browse the search results
   - image_index: Index of the image, depending on match direction.
   - match: "first" / "last" - "first" → image_index 0 outputs the most similar image. "last" → image_index 0 outputs the least similar image.
+- "Advanced Result Browser": Similar to "Result Browser", but extended to output an image batch, all images scaled to resolution of "batch_frame_image" or resolution of the first image of the batch.
+  - offset_index: see image_index of "Result Browser"
+  - image_count: the amount of images to output as a image batch
+  - match: see match of "Result Browser"
+
+Additionally you can chain up as many databases has you want by using the optional "img_db" socket.
 
 ## You can directly compare the similarity of two images by connecting the outputs of two "Get Image Embeddings" nodes to a "Compare Embeddings" node.
 ![Simple image comparison](examples/SimpleImageComparison.png)

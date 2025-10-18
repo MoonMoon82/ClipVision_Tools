@@ -22,9 +22,9 @@ NODE_CLASS_MAPPINGS = {
     "CalcEmbeds": CalcEmbeds,
     "CompareEmbeds": CompareEmbeds,
     "ImageSearcher": ImageSearcher,
-    "RBrowser": ResultBrowser,
-    "AdvRBrowser": ResultBrowserAdvanced,
-    "RCombiner": ResultCombiner,
+    "ResultBrowser": ResultBrowser,
+    "ResultBrowserAdvanced": ResultBrowserAdvanced,
+    "ResultCombiner": ResultCombiner,
     "LoadDB": LoadDB,
     "GenerateDB": GenerateDB,
 }
@@ -36,9 +36,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CalcEmbeds": "Calculate Embeddings (experimental)",
     "CompareEmbeds": "Compare Embeddings",
     "ImageSearcher": "Image Searcher",
-    "RBrowser": "Result Browser",
-    "AdvRBrowser": "Advanced Result Browser",
-    "RCombiner": "Combine Results",
+    "ResultBrowser": "Result Browser",
+    "ResultBrowserAdvanced": "Advanced Result Browser",
+    "ResultCombiner": "Combine Results",
     "DBLoader": "Embeddings DB Loader",
     "GenerateDB": "Generate Image Database"
 }

@@ -167,10 +167,8 @@ class ResultBrowserAdvanced:
             scores.append(score)
             filenames.append(file_name)
 
-            
         if remove_first_image:
             batch_frame_image = batch_frame_image[1:]
-
 
         return batch_frame_image, filenames, scores
 
