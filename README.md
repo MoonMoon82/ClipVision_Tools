@@ -48,7 +48,7 @@ This node calculates the similarity as a factor between 0.0 and 1.0, which can b
  You can check text and vision model compatibility using the "Embeddings Shape Info" node. Models with the same "shape" can be combined.
 
 ## Using a "CLIP Text Encode" and other experimental nodes enables you to search for images in combination with text.
-![Simple image comparison](examples/GeneralWorkflow_experimental.png)
+![Simple image comparison](examples/GeneralWorkflow_experimental2.png)
  → Please note, this is a very experimental workflow! Results may vary due to the algorithms of the "Calculate Embeddings" node.
 
 ## Manual install
