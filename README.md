@@ -22,7 +22,7 @@ This repository provides several custom nodes for ComfyUI that enable efficient 
 
 ## After creating a database, you can search for similar images using a workflow like the one shown above:
 ![Using a ClipVision-Database](examples/UsingClipVision-Database.png)
-- Load an image into the Get Image Embeddings node, connected to a "Load CLIP Vision" node and select a Clip Vision model. → This node generates the embedding data of your input image.
+- Load an image into a "CLIP Vision Encode" node, connected to a "Load CLIP Vision" node and select a ClipVision model. → This node generates the image embedding data of your input image.
 - Pass this embedding data to the "Image Searcher" node, which calculates image similarities using a cosine similarity algorithm.
 - "Result Browser": Browse the search results
   - image_index: Index of the image, depending on match direction.
@@ -32,11 +32,24 @@ This repository provides several custom nodes for ComfyUI that enable efficient 
   - image_count: the amount of images to output as a image batch
   - match: see match of "Result Browser"
 
-Additionally you can chain up as many databases has you want by using the optional "img_db" socket.
+Additionally you can chain up multiple databases by using the optional "img_db" socket.
+ → Please note, all databases need to be generated with the same ClipVision model
 
-## You can directly compare the similarity of two images by connecting the outputs of two "Get Image Embeddings" nodes to a "Compare Embeddings" node.
+## You can directly compare the similarity of two images by connecting the outputs of two "CLIP Vision Encode" nodes to a "Compare Embeddings" node.
 ![Simple image comparison](examples/SimpleImageComparison.png)
 This node calculates the similarity as a factor between 0.0 and 1.0, which can be displayed using Crystools’ “Show any value to console/display” node or any similar output node.
+
+## Using a "CLIP Text Encode" in combination with the experimental node "Condition 2 Embeddings" you can search through the database by text description.
+![Simple image comparison](examples/GeneralWorkflow_experimental.png)
+ 
+ → Please note, not all CLIP text encoder models are compatible with all CLIP vision encoders. Please pay attention to the CLIP vision model with which you created the databse!
+ I have very good results using the "clip_g" CLIP text encoder model in combination with "CLIP-ViT-bigG-14-laion2B-39B-b160k" CLIP vision model.
+
+ You can check text and vision model compatibility using the "Embeddings Shape Info" node. Models with the same "shape" can be combined.
+
+## Using a "CLIP Text Encode" and other experimental nodes enables you to search for images in combination with text.
+![Simple image comparison](examples/GeneralWorkflow_experimental.png)
+ → Please note, this is a very experimental workflow! Results may vary due to the algorithms of the "Calculate Embeddings" node.
 
 ## Manual install
 ```bash

@@ -1,9 +1,10 @@
 from typing import Any
 import numpy as np
-from .utils import (get_image_clip_embeddings)
+import torch
+from comfy.clip_vision import Output
+from comfy.comfy_types import IO
 
-class GetImageEmbeds:
-
+class EmbedsInfo:
     def __init__(self):
         pass
 
@@ -11,18 +12,41 @@ class GetImageEmbeds:
     def INPUT_TYPES(s):
         return {
             "required": { 
-                "clip_vision": ("CLIP_VISION",),
-                "image": ("IMAGE",),
-            }
+                "clip_vision_output": ("CLIP_VISION_OUTPUT",),
+            },
         }
 
-    RETURN_TYPES = ("img_emb", )
-    RETURN_NAMES = ("IMG_EMB", )
-    FUNCTION = "GetImgEmbeds"
-    CATEGORY = "ClipVisionTools"
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("CLIP TEXT Info",)
+    FUNCTION = "cond_to_embeds"
+    CATEGORY = "ClipVisionTools/experimental"
 
-    def GetImgEmbeds(self, clip_vision, image):
-        return get_image_clip_embeddings(clip_vision, image),
+    def cond_to_embeds(self,  clip_vision_output):
+        info = clip_vision_output["image_embeds"].shape
+        return info,
+
+class Cond2Embeds:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": { 
+                "conditioning": (IO.CONDITIONING,),
+            },
+        }
+
+    RETURN_TYPES = ("CLIP_VISION_OUTPUT", )
+    RETURN_NAMES = ("CLIP_VISION_OUTPUT", )
+    FUNCTION = "cond_to_embeds"
+    CATEGORY = "ClipVisionTools/experimental"
+
+    def cond_to_embeds(self,  conditioning):
+        tmp = Output()
+        cond = conditioning[0][1].get("pooled_output", None)
+        tmp["image_embeds"] = cond
+        return tmp,
 
 class ScaleEmbeds:
     def __init__(self):
@@ -32,21 +56,25 @@ class ScaleEmbeds:
     def INPUT_TYPES(s):
         return {
             "required": { 
-                "img_emb1": ("img_emb",),
+                "clip_vision_output": ("CLIP_VISION_OUTPUT",),
                 "scale": ("FLOAT", {
                     "default": 1, "step": 0.01
                 }),
             },
         }
 
-    RETURN_TYPES = ("img_emb", )
-    RETURN_NAMES = ("IMG_EMBEDS", )
+    RETURN_TYPES = ("CLIP_VISION_OUTPUT", )
+    RETURN_NAMES = ("clip_vision_output", )
     FUNCTION = "Scale_Embeds"
-    CATEGORY = "ClipVisionTools"
+    CATEGORY = "ClipVisionTools/experimental"
 
-    def Scale_Embeds(self,  img_emb1, scale):
-        image_embeds = (np.array(img_emb1) * scale)
-        return image_embeds,
+    def Scale_Embeds(self,  clip_vision_output, scale):
+        tmp = Output()
+        cv1 = clip_vision_output["image_embeds"].numpy().flatten().tolist()
+        oshape = clip_vision_output["image_embeds"].shape
+        image_embeds = np.array(cv1) * scale
+        tmp["image_embeds"] = torch.tensor(np.array(image_embeds).reshape(oshape))
+        return tmp,
 
 #These algorithms are experimental. Some of them seem to work, some of them seem to have unexpected results.
 class CalcEmbeds:
@@ -58,29 +86,36 @@ class CalcEmbeds:
         return {
             "required": { 
                 "calculation": (["normalize", "add", "subtract", "most common", "remove image2 from image1", "average of both images", "or", "multiply"], {"default": "subtract"}),
-                "img_emb1": ("img_emb",),
+                "clip_vision_output1": ("CLIP_VISION_OUTPUT",),
             },
             "optional": {
-                    "img_emb2": ("img_emb",),
+                    "clip_vision_output2": ("CLIP_VISION_OUTPUT",),
             }
         }
 
-    RETURN_TYPES = ("img_emb", )
-    RETURN_NAMES = ("IMG_EMBEDS", )
+    RETURN_TYPES = ("CLIP_VISION_OUTPUT", )
+    RETURN_NAMES = ("clip_vision_output", )
     FUNCTION = "Calc_Embeds"
-    CATEGORY = "ClipVisionTools"
+    CATEGORY = "ClipVisionTools/experimental"
 
-    def Calc_Embeds(self, calculation, img_emb1, img_emb2=None):
+    def Calc_Embeds(self, calculation, clip_vision_output1, clip_vision_output2=None):
+        tmp = Output()
+        cv1 = clip_vision_output1["image_embeds"].numpy().flatten().tolist()
+        oshape = clip_vision_output1["image_embeds"].shape
+
+        if clip_vision_output2 is not None:
+            cv2 = clip_vision_output2["image_embeds"].numpy().flatten().tolist()
+
         if calculation == "normalize":
-            if img_emb2 is not None:
-                a_min, a_max = np.min(np.array(img_emb1)), np.max(np.array(img_emb1))
-                b_min, b_max = np.min(np.array(img_emb2)), np.max(np.array(img_emb2))
+            if cv2 is not None:
+                a_min, a_max = np.min(np.array(cv1)), np.max(np.array(cv1))
+                b_min, b_max = np.min(np.array(cv2)), np.max(np.array(cv2))
                 if np.isclose(a_max, a_min):
-                    image_embeds = np.full_like(np.array(img_emb1), (b_min + b_max) / 2)                
+                    image_embeds = np.full_like(np.array(cv1), (b_min + b_max) / 2)                
                 else:
-                    image_embeds = (np.array(img_emb1) - a_min) / (a_max - a_min) * (b_max - b_min) + b_min
+                    image_embeds = (np.array(cv1) - a_min) / (a_max - a_min) * (b_max - b_min) + b_min
             else:
-                x = np.array(img_emb1, dtype=float)
+                x = np.array(cv1, dtype=float)
                 min_x = np.min(x)
                 max_x = np.max(x)
                 if max_x == min_x:
@@ -92,28 +127,30 @@ class CalcEmbeds:
                     image_embeds = norm * 2 - 1
 
         if calculation == "add":
-            image_embeds = (np.array(img_emb1) + np.array(img_emb2))
+            image_embeds = (np.array(cv1) + np.array(cv2))
 
         if calculation == "subtract":
-            image_embeds = (np.array(img_emb1) - np.array(img_emb2))
+            image_embeds = (np.array(cv1) - np.array(cv2))
 
         if calculation == "most common":
-            cos_sim = np.dot(np.array(img_emb1), np.array(img_emb2)) / (np.linalg.norm(np.array(img_emb1)) * np.linalg.norm(np.array(img_emb2)))
-            image_embeds = cos_sim * (np.array(img_emb1) + np.array(img_emb2)) / 2
+            cos_sim = np.dot(np.array(cv1), np.array(cv2)) / (np.linalg.norm(np.array(cv1)) * np.linalg.norm(np.array(cv2)))
+            image_embeds = cos_sim * (np.array(cv1) + np.array(cv2)) / 2
 
         if calculation == "remove image2 from image1":
-            image_embeds = (np.array(img_emb1) - np.array(img_emb2))
+            image_embeds = (np.array(cv1) - np.array(cv2))
             image_embeds = image_embeds / np.linalg.norm(image_embeds)
 
         if calculation == "average of both images":
-            image_embeds = (np.array(img_emb1) + np.array(img_emb2)) / 2
+            image_embeds = (np.array(cv1) + np.array(cv2)) / 2
 
         if calculation == "or":
-            image_embeds = np.minimum(np.array(img_emb1), np.array(img_emb2)) 
+            image_embeds = np.minimum(np.array(cv1), np.array(cv2)) 
 
         if calculation == "multiply":
-            image_embeds = (np.array(img_emb1) * np.array(img_emb2))
-        return image_embeds,
+            image_embeds = (np.array(cv1) * np.array(cv2))
+
+        tmp["image_embeds"] = torch.tensor(np.array(image_embeds).reshape(oshape))
+        return tmp,
 
 class CompareEmbeds:
     def __init__(self):
@@ -123,8 +160,8 @@ class CompareEmbeds:
     def INPUT_TYPES(s):
         return {
             "required": { 
-                "img_emb1": ("img_emb",),
-                "img_emb2": ("img_emb",),
+                "clip_vision_output1": ("CLIP_VISION_OUTPUT",),
+                "clip_vision_output2": ("CLIP_VISION_OUTPUT",),
             }
         }
 
@@ -133,7 +170,9 @@ class CompareEmbeds:
     FUNCTION = "Compare_Embeds"
     CATEGORY = "ClipVisionTools"
 
-    def Compare_Embeds(self, img_emb1, img_emb2):
+    def Compare_Embeds(self, clip_vision_output1, clip_vision_output2):
+        img_emb1 = clip_vision_output1["image_embeds"].numpy().flatten().tolist()
+        img_emb2 = clip_vision_output2["image_embeds"].numpy().flatten().tolist()
         image_norm = np.linalg.norm(img_emb1)
         feature_norm = np.linalg.norm(img_emb2)
         dot_products = np.dot(img_emb1, img_emb2)  # Matrix-Vector-Product

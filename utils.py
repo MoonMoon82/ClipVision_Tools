@@ -1,27 +1,28 @@
-import json
+import orjson
 import os
 from pathlib import Path
 import numpy as np
-
+from nodes import CLIPTextEncode
 import comfy.model_management as model_management
 import torch
-from comfy.clip_vision import Output, clip_preprocess
+from comfy.clip_vision import Output, clip_preprocess, ClipVisionModel
 from PIL import Image, ImageFile, UnidentifiedImageError
 from torchvision.transforms.functional import pil_to_tensor
 from tqdm import tqdm
 
 
-def generate_clip_features_json(clip_vision, path_to_images_folder: Path,
+def generate_clip_features_json(clip_vision: ClipVisionModel, path_to_images_folder: Path,
                                 output_json_path: Path):
     clip_features = []
+    errors = []
+
     ImageFile.LOAD_TRUNCATED_IMAGES = True
 
     image_path_list = list(path_to_images_folder.glob('**/*.*'))
     imagetypes = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".tif", ".webp"}
-    model_management.load_model_gpu(clip_vision.patcher)
-    # print("--------- Generating embeddings for images ---------")
+    
     image_tqdm = tqdm(image_path_list)
-    errors = ""
+
     for image_path in image_tqdm:
         if os.path.splitext(str(image_path.name).lower())[1] in imagetypes:
             image_tqdm.set_description("Processing " + str(image_path.name))
@@ -52,34 +53,20 @@ def generate_clip_features_json(clip_vision, path_to_images_folder: Path,
             if error != "":
                 errors = errors + error + "\r\n"
 
-    with open(output_json_path, 'w') as f:
-        json.dump(clip_features, f)
+    with open(output_json_path, "wb") as f:  # Binary-Mode!
+        f.write(orjson.dumps(clip_features))
+
     return errors
 
+def get_image_clip_embeddings(clip_vision:ClipVisionModel, image: Image):
+    with torch.no_grad():  # Disable gradient calculation during inference
+        cv_image =  clip_vision.encode_image(image_to_tensor(image), crop=False)
+    return cv_image["image_embeds"].numpy().flatten().tolist()
 
-def get_image_clip_embeddings(clip_vision, image: Image):
-    model_management.load_model_gpu(clip_vision.patcher)
 
-    if type(image) is not torch.Tensor:
-        image = image_to_tensor(image)
-    image = image.to(clip_vision.load_device)
-
-    pixel_values = clip_preprocess(image, crop=False)
-    out = clip_vision.model(pixel_values=pixel_values, intermediate_output=-2)
-
-    outputs = Output()
-    outputs["last_hidden_state"] = out[0].to(
-        model_management.intermediate_device())
-    outputs["image_embeds"] = out[2].to(
-        model_management.intermediate_device())
-    outputs["penultimate_hidden_states"] = out[1].to(
-        model_management.intermediate_device())
-
-    return outputs["image_embeds"].numpy().flatten().tolist()
-
-def get_image(file_name: str):
-    image = image_to_tensor(Image.open(file_name))
-    return image
+#def get_image(file_name: str):
+#    image = image_to_tensor(Image.open(file_name))
+#    return image
 
 def image_to_tensor(image):
     tensor = torch.clamp(pil_to_tensor(image).float() / 255., 0, 1)

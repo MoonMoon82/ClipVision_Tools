@@ -1,4 +1,5 @@
-from .clipvision_embeds import GetImageEmbeds
+from .clipvision_embeds import EmbedsInfo
+from .clipvision_embeds import Cond2Embeds
 from .clipvision_embeds import CalcEmbeds
 from .clipvision_embeds import ScaleEmbeds
 from .clipvision_embeds import CompareEmbeds
@@ -17,7 +18,8 @@ import os
 folder_paths.folder_names_and_paths["EmbDBs"] = ([os.path.join(folder_paths.models_dir, "EmbDBs")], [".json"])
 
 NODE_CLASS_MAPPINGS = {
-    "GetImageEmbeds": GetImageEmbeds,
+    "EmbedsInfo": EmbedsInfo,
+    "Cond2Embeds": Cond2Embeds,
     "ScaleEmbeds": ScaleEmbeds,
     "CalcEmbeds": CalcEmbeds,
     "CompareEmbeds": CompareEmbeds,
@@ -31,7 +33,8 @@ NODE_CLASS_MAPPINGS = {
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "GetImageEmbeds": "Get Image Embeddings",
+    "EmbedsInfo": "Embeddings Shape Info (experimental)",
+    "Cond2Embeds": "Condition 2 Embeddings (experimental)",
     "ScaleEmbeds": "Scale Embeddings (experimental)",
     "CalcEmbeds": "Calculate Embeddings (experimental)",
     "CompareEmbeds": "Compare Embeddings",
