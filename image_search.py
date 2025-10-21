@@ -1,18 +1,28 @@
 from typing import Any
 import numpy as np
 from .clipvision_db import LoadDB
-from .utils import (repairImage, image_to_tensor)
-from PIL import Image, ImageFile, UnidentifiedImageError
+from .utils import (repairImage, image_to_tensor, rotate_image_to_exif)
+from PIL import Image, ImageFile, UnidentifiedImageError, ExifTags
 from nodes import (ImageBatch)
+from pillow_heif import register_heif_opener
+
+register_heif_opener()
+
 class results_class:
+    """
+    Store the results of image search, including distances and clip features.
+    """
     distances: Any = None
     clip_features: Any = None
 
-    def __init__(self, d, c):
-        self.distances = d
-        self.clip_features = c
+    def __init__(self, distances, clip_features):
+        self.distances = distances
+        self.clip_features = clip_features
 
 class ImageSearcher:
+    """
+    Search for similar images based on clip embeddings.
+    """    
     LOADED_DB: Any = None
     LOADED_clip_features: Any = None
 
@@ -56,6 +66,9 @@ class ImageSearcher:
         return result,
 
 class ResultCombiner:
+    """
+    Combines the results of two image searches.
+    """    
     def __init__(self):
         pass
 
@@ -81,6 +94,9 @@ class ResultCombiner:
         return result,
 
 class ResultBrowser:
+    """
+    Browse the results of an image search.
+    """    
     def __init__(self):
         pass
 
@@ -114,10 +130,15 @@ class ResultBrowser:
 
         idx, score = distances_sorted[image_index]
         file_name, _ = clip_features[idx]
-        t_image = repairImage(image_to_tensor(Image.open(file_name)))
+        img = Image.open(file_name)
+        img = rotate_image_to_exif(img)
+        t_image = repairImage(image_to_tensor(img))
         return t_image, file_name, score
 
 class ResultBrowserAdvanced:
+    """
+    Browse the results of an image search to get image batches as output instead of single images.
+    """    
     def __init__(self):
         pass
 
@@ -164,7 +185,11 @@ class ResultBrowserAdvanced:
         for i in range(start_idx, end_idx):
             idx, score = distances_sorted[i]
             file_name, _ = clip_features[idx]
-            t_image = repairImage(image_to_tensor(Image.open(file_name).convert("RGB")))
+
+            img = Image.open(file_name)
+            img = rotate_image_to_exif(img).convert("RGB")
+
+            t_image = repairImage(image_to_tensor(img))
 
             if batch_frame_image is None:
                 batch_frame_image = t_image

@@ -16,7 +16,7 @@ This repository provides several custom nodes for ComfyUI that enable efficient 
 ![Creating ClipVision-Database](examples/CreatingClipVision-Database.png)
 - Connected a "Load CLIP Vision" node and select a Clip Vision model. From my experience "CLIP-ViT-bigG-14-laion2B-39B-b160k" seems to work very well.
   [Download the Clip vision .safetensor-file into your ComfyUI "/models/clip_vision" folder](https://huggingface.co/axssel/IPAdapter_ClipVision_models/blob/main/CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors)
-- path_to_images: Specify the full path to your image directory. All subfolders are scanned automatically.
+- path_to_images: Specify the full path to your image collection directory. All subfolders are scanned automatically.
 - new_db_name: Choose a filename with the .json extension. The file will automatically be stored in your ComfyUI "/models/embDBs" folder.
 - If you have Crystools installed, you can use the "Show any value to console/display" node to display a list of files that could not be recorded in the database (any other node capable of displaying text output works as well).
 
@@ -43,13 +43,14 @@ This node calculates the similarity as a factor between 0.0 and 1.0, which can b
 ![Simple image comparison](examples/GeneralWorkflow_experimental.png)
  
  → Please note, not all CLIP text encoder models are compatible with all CLIP vision encoders. Please pay attention to the CLIP vision model with which you created the databse!
- I have very good results using the "clip_g" CLIP text encoder model in combination with "CLIP-ViT-bigG-14-laion2B-39B-b160k" CLIP vision model.
+ I got very good results using the "clip_g" CLIP text encoder model in combination with "CLIP-ViT-bigG-14-laion2B-39B-b160k" CLIP vision model.
 
  You can check text and vision model compatibility using the "Embeddings Shape Info" node. Models with the same "shape" can be combined.
 
 ## Using a "CLIP Text Encode" and other experimental nodes enables you to search for images in combination with text.
 ![Simple image comparison](examples/GeneralWorkflow_experimental2.png)
  → Please note, this is a very experimental workflow! Results may vary due to the algorithms of the "Calculate Embeddings" node.
+ In this case, the "Calculate Embeddings" node is set to "subtract". This causes the "green apples" embeddings to be reduced/removed from the image embeddings. This results in showing no images that include green apples. Hope you get the idea of how it should work in general.
 
 ## Manual install
 ```bash
@@ -63,7 +64,7 @@ Your_ComfyUI_Folder/python_embeded/python.exe -s -m pip install -r requirements.
 ```
 
 ## Dependencies:
-Currently, only the orjson Python module is required.
+Currently, only the orjson and pillow-heif Python modules are required.
 
 ## 🙏 Credits
 Based on the original idea from [comfyUI-PL-data-tools](https://github.com/PnthrLeo/comfyUI-PL-data-tools) by PnthrLeo.

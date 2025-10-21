@@ -1,2 +1,3 @@
-# only orjson is needed so far:
+# only orjson and pillow-heif are needed so far:
 orjson
+pillow-heif
