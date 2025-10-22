@@ -7,6 +7,7 @@ This repository provides several custom nodes for ComfyUI that enable efficient 
 
 ## Node Overview:
 ![Node Overview](examples/Overview.png)
+[.json workflow](examples/CVT_Overview.json)
 
 - ClipVision Database Nodes - Create and access small or large image collections (already tried with a collection up to ~100.000 images).
 - Image Embedding Analysis Nodes - Search for similar imags within your collections using cosine-similarity.

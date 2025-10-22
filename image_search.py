@@ -149,7 +149,8 @@ class ResultBrowserAdvanced:
                 "results": ("SRESULTS",),
                 "offset_index": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff }),
                 "image_count": ("INT", {"default": 1, "min": 1, "max": 0xffffffffffffffff }),
-                "match": (["first", "last"], {"default": "first"})
+                "match": (["first", "last"], {"default": "first"}),
+                "threshold": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001})
             },
             "optional": { 
                 "batch_frame_image": ("IMAGE",),
@@ -161,7 +162,7 @@ class ResultBrowserAdvanced:
     FUNCTION = "AdvResult_Browser"
     CATEGORY = "ClipVisionTools"
 
-    def AdvResult_Browser(self, results, offset_index, image_count, match, batch_frame_image=None ):
+    def AdvResult_Browser(self, results, offset_index, image_count, match, threshold, batch_frame_image=None ):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
         scores = []
@@ -183,7 +184,12 @@ class ResultBrowserAdvanced:
         end_idx = start_idx + image_count
         
         for i in range(start_idx, end_idx):
+            if i >= len(distances_sorted):
+                break
             idx, score = distances_sorted[i]
+            if score < threshold:
+                break
+
             file_name, _ = clip_features[idx]
 
             img = Image.open(file_name)

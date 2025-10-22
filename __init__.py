@@ -11,7 +11,7 @@ from .image_search import ResultCombiner
 
 from .clipvision_db import LoadDB
 from .clipvision_db import GenerateDB
-
+from .clipvision_db import EditDB
 import folder_paths
 import os
 
@@ -29,6 +29,7 @@ NODE_CLASS_MAPPINGS = {
     "ResultCombiner": ResultCombiner,
     "LoadDB": LoadDB,
     "GenerateDB": GenerateDB,
+    "EditDB": EditDB,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -42,8 +43,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ResultBrowser": "Result Browser",
     "ResultBrowserAdvanced": "Advanced Result Browser",
     "ResultCombiner": "Combine Results",
-    "DBLoader": "Embeddings DB Loader",
-    "GenerateDB": "Generate Image Database"
+    "DBLoader": "Load Embeddings Database",
+    "GenerateDB": "Generate Embeddings Database",
+    "EditDB": "Edit Embeddings Database",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

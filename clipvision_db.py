@@ -4,6 +4,7 @@ import folder_paths
 import orjson
 
 from .utils import (generate_clip_features_json)
+import fnmatch
 
 class LoadDB:
     """
@@ -71,6 +72,67 @@ class LoadDB:
         else:
             self.LOADED_DB = self.MY_LOADED_DB
         return self, 
+
+
+class EditDB:
+    """
+    Loads an image database from a JSON file.
+    """
+
+    MY_LOADED_DB: list = None
+    LOADED_DB: list = None
+    LOADED_DB_Name = ""
+    images_folder = ""
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {           
+            "required": { 
+                "img_db": ("LoadDB",),
+                "method": (["exclude", "filter", "replace"], {"default": "exclude"}),
+                "edit_text": ("STRING", {
+                    "multiline": False,
+                    "default": "remove*images.jpg"
+                },),                            
+                "replace_text": ("STRING", {
+                    "multiline": False,
+                    "default": "/newpath/"
+                },),                            
+            }
+        }
+
+    RETURN_TYPES = ("LoadDB", )
+    RETURN_NAMES = ("IMG_DB", )
+    FUNCTION = "Edit_DB"
+    CATEGORY = "ClipVisionTools"
+
+    def Edit_DB(self, img_db:LoadDB, method, edit_text, replace_text):
+        NewDB = LoadDB()
+        NewDB.LOADED_DB = []
+
+        if isinstance(edit_text, str):
+            edit_text = [edit_text]
+
+        for file_name, embeddings in img_db.LOADED_DB:
+            if method == "exclude":
+                if not any(fnmatch.fnmatch(file_name, pat) for pat in edit_text):
+                    NewDB.LOADED_DB.append((file_name, embeddings))
+
+            if method == "filter":
+                if any(fnmatch.fnmatch(file_name, pat) for pat in edit_text):
+                    NewDB.LOADED_DB.append((file_name, embeddings))
+
+            if method == "replace":
+                new_name = file_name
+                for pat in edit_text:
+                    if fnmatch.fnmatch(file_name, pat):
+                        new_name = file_name.replace(pat.strip("*"), replace_text)
+                NewDB.LOADED_DB.append((new_name, embeddings))
+
+        return NewDB, 
 
 class GenerateDB:
     """

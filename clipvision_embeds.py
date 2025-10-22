@@ -1,10 +1,13 @@
-from typing import Any
+# from typing import Any
 import numpy as np
 import torch
 from comfy.clip_vision import Output
 from comfy.comfy_types import IO
 
 class EmbedsInfo:
+    """
+    Extracts information about CLIP vision output.
+    """
     def __init__(self):
         pass
 
@@ -26,6 +29,9 @@ class EmbedsInfo:
         return info,
 
 class Cond2Embeds:
+    """
+    Converts conditioning information to CLIP vision output.
+    """    
     def __init__(self):
         pass
 
@@ -49,6 +55,9 @@ class Cond2Embeds:
         return tmp,
 
 class ScaleEmbeds:
+    """
+    Scales the image embeddings in the CLIP vision output.
+    """    
     def __init__(self):
         pass
 
@@ -78,6 +87,9 @@ class ScaleEmbeds:
 
 #These algorithms are experimental. Some of them seem to work, some of them seem to have unexpected results.
 class CalcEmbeds:
+    """
+    Scales the image embeddings in the CLIP vision output.
+    """    
     def __init__(self):
         pass
 
@@ -153,6 +165,9 @@ class CalcEmbeds:
         return tmp,
 
 class CompareEmbeds:
+    """
+    Compares two sets of image embeddings.
+    """    
     def __init__(self):
         pass
 
