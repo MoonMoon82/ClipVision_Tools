@@ -5,6 +5,7 @@ import orjson
 
 from .utils import (generate_clip_features_json)
 import fnmatch
+import time
 
 class LoadDB:
     """
@@ -26,7 +27,8 @@ class LoadDB:
                 "db_name": (folder_paths.get_filename_list("EmbDBs"),) ,
                 "path_to_images_folder": ("STRING", {
                     "multiline": False,
-                    "default": "/path/to/folder/with/images"
+                    "default": "/path/to/folder/with/images",
+                    "tooltip": "Basepath to the folder containing the images"
                 }), 
             },
                 "optional": {
@@ -73,11 +75,7 @@ class LoadDB:
             self.LOADED_DB = self.MY_LOADED_DB
         return self, 
 
-
 class EditDB:
-    """
-    Loads an image database from a JSON file.
-    """
 
     MY_LOADED_DB: list = None
     LOADED_DB: list = None
@@ -92,14 +90,16 @@ class EditDB:
         return {           
             "required": { 
                 "img_db": ("LoadDB",),
-                "method": (["exclude", "filter", "replace"], {"default": "exclude"}),
+                "method": (["exclude", "filter", "replace"], {"default": "exclude", "tooltip": "Method to edit results"}),
                 "edit_text": ("STRING", {
                     "multiline": False,
-                    "default": "remove*images.jpg"
+                    "default": "remove*images.jpg",
+                    "tooltip": "Use wildcards (*) to match filenames or paths"
                 },),                            
                 "replace_text": ("STRING", {
                     "multiline": False,
-                    "default": "/newpath/"
+                    "default": "/newpath/",
+                    "tooltip": "Text to replace matched text with when using 'replace' method"
                 },),                            
             }
         }
@@ -137,7 +137,10 @@ class EditDB:
 class GenerateDB:
     """
     Generates a new image database from a folder of images.
-    """    
+    """
+    last_error: bool = True
+    last_time: float = 0.0
+
     def __init__(self):
         pass
     @classmethod
@@ -147,12 +150,17 @@ class GenerateDB:
                 "clip_vision": ("CLIP_VISION",),
                 "path_to_images_folder": ("STRING", {
                     "multiline": False,
-                    "default": "path/to/folder/with/images"
+                    "default": "path/to/folder/with/images",
+                    "tooltip": "Basepath to the folder containing the images"
                 }),
                 "new_db_name": ("STRING", {
                     "multiline": False,
-                    "default": "new_img_db.json"
+                    "default": "new_img_db.json",
+                    "tooltip": "Name of the new database file to create"
                 }),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
             }
         }
     
@@ -162,7 +170,7 @@ class GenerateDB:
 
     FUNCTION = "start_gen_db"
     CATEGORY = "ClipVisionTools"
-    def start_gen_db(self, clip_vision, path_to_images_folder, new_db_name):
+    def start_gen_db(self, clip_vision, path_to_images_folder, new_db_name, unique_id):
         """
         Generates a new image database.
 
@@ -178,9 +186,8 @@ class GenerateDB:
         path_to_database = Path(folder_paths.get_folder_paths("EmbDBs")[0]) / new_db_name
         
         path_to_database.parent.mkdir(exist_ok=True)
- 
-        try:
-            errors = generate_clip_features_json(clip_vision, path_to_images, path_to_database)
-            return errors,
-        except Exception as e:
-            return f"Error generating database file: {e}"
+        
+        errors = generate_clip_features_json(clip_vision, path_to_images, path_to_database, unique_id)
+        return errors,
+        
+

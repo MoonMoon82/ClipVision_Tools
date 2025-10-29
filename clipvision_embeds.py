@@ -46,7 +46,7 @@ class Cond2Embeds:
     RETURN_TYPES = ("CLIP_VISION_OUTPUT", )
     RETURN_NAMES = ("CLIP_VISION_OUTPUT", )
     FUNCTION = "cond_to_embeds"
-    CATEGORY = "ClipVisionTools/experimental"
+    CATEGORY = "ClipVisionTools"
 
     def cond_to_embeds(self,  conditioning):
         tmp = Output()
@@ -85,10 +85,10 @@ class ScaleEmbeds:
         tmp["image_embeds"] = torch.tensor(np.array(image_embeds).reshape(oshape))
         return tmp,
 
-#These algorithms are experimental. Some of them seem to work, some of them seem to have unexpected results.
 class CalcEmbeds:
     """
     Scales the image embeddings in the CLIP vision output.
+    These algorithms are experimental. Some of them seem to work, some of them seem to have unexpected results.
     """    
     def __init__(self):
         pass

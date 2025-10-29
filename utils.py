@@ -2,10 +2,9 @@ import orjson
 import os
 from pathlib import Path
 import numpy as np
-from nodes import CLIPTextEncode
-import comfy.model_management as model_management
 import torch
 from comfy.clip_vision import Output, clip_preprocess, ClipVisionModel
+from comfy.utils import ProgressBar
 from PIL import Image, ImageFile, UnidentifiedImageError, ExifTags
 from torchvision.transforms.functional import pil_to_tensor
 from pillow_heif import register_heif_opener
@@ -18,7 +17,7 @@ for ExifO in ExifTags.TAGS.keys():
         break
 
 def generate_clip_features_json(clip_vision: ClipVisionModel, path_to_images_folder: Path,
-                                output_json_path: Path):
+                                output_json_path: Path, unique_id):
     clip_features = []
     errors = []
 
@@ -29,7 +28,12 @@ def generate_clip_features_json(clip_vision: ClipVisionModel, path_to_images_fol
     
     image_tqdm = tqdm(image_path_list)
     #image_tqdm = image_path_list
+    pbar = ProgressBar(len(image_path_list), node_id=unique_id)
+
+    #image: Image
     for image_path in image_tqdm:
+        pbar.update(1)
+        
         if os.path.splitext(str(image_path.name).lower())[1] in imagetypes:
             image_tqdm.set_description("Processing " + str(image_path.name))
             #print("Processing " + str(image_path))
